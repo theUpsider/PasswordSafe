@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "KfWEsTqakw/VbWiTjSWEFxAXa5k8XAoum94EGm1zhGf+dcpGWqG/MJiVt1q0RwJLDzmcyuWpL6R5JkArqNo0Nw==",
+  "dgSpecHash": "xU39BcQwmOhG109GwH4l/Rg8Ioe8Im7qPlXi/8MKXs6EoPm4CIVOItroPTZzYWH/JHdo8lFLtiIbQrsFza0dIg==",
   "success": true,
-  "projectFilePath": "J:\\Development\\Training_PasswordsafeConsole_CSharp\\PasswordSafeConsole\\PasswordSafeConsole.csproj",
+  "projectFilePath": "J:\\Development\\Training_PasswordsafeConsole_CSharp\\PasswordSafe\\PasswordSafeConsole\\PasswordSafeConsole.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\David\\.nuget\\packages\\microsoft.data.sqlite\\6.0.1\\microsoft.data.sqlite.6.0.1.nupkg.sha512",
     "C:\\Users\\David\\.nuget\\packages\\microsoft.data.sqlite.core\\6.0.1\\microsoft.data.sqlite.core.6.0.1.nupkg.sha512",

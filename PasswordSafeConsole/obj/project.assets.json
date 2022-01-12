@@ -705,11 +705,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "J:\\Development\\Training_PasswordsafeConsole_CSharp\\PasswordSafeConsole\\PasswordSafeConsole.csproj",
+      "projectUniqueName": "J:\\Development\\Training_PasswordsafeConsole_CSharp\\PasswordSafe\\PasswordSafeConsole\\PasswordSafeConsole.csproj",
       "projectName": "PasswordSafeConsole",
-      "projectPath": "J:\\Development\\Training_PasswordsafeConsole_CSharp\\PasswordSafeConsole\\PasswordSafeConsole.csproj",
+      "projectPath": "J:\\Development\\Training_PasswordsafeConsole_CSharp\\PasswordSafe\\PasswordSafeConsole\\PasswordSafeConsole.csproj",
       "packagesPath": "C:\\Users\\David\\.nuget\\packages\\",
-      "outputPath": "J:\\Development\\Training_PasswordsafeConsole_CSharp\\PasswordSafeConsole\\obj\\",
+      "outputPath": "J:\\Development\\Training_PasswordsafeConsole_CSharp\\PasswordSafe\\PasswordSafeConsole\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\David\\AppData\\Roaming\\NuGet\\NuGet.Config",
