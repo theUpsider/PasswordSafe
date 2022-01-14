@@ -1,7 +1,12 @@
-﻿using System.Security.Cryptography;
+﻿using System;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace PasswordSafeLibrary {
+
+    /// <summary>
+    /// https://de.wikipedia.org/wiki/Advanced_Encryption_Standard
+    /// </summary>
     public class AESEncryption : IEncryptionMethod {
         private Aes aes;
         public AESEncryption() {

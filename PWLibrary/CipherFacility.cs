@@ -14,6 +14,10 @@ namespace PasswordSafeLibrary {
 
         public CipherFacility(byte[] masterPwByte) {
             this.masterPw = masterPwByte;
+            encryptionMethod = decideEncryption();
+        }
+
+        public static IEncryptionMethod decideEncryption() {
             EncryptionType encryption;
             EncryptionType prevEncryption;
             // read config
@@ -27,27 +31,33 @@ namespace PasswordSafeLibrary {
 
             // encryption method changed
             if (!prevEncryption.Equals(encryption)) {
-                Console.WriteLine("The encryption type changed. Passwords may not be readable. If you want to change the type, put in <yes>. " +
-                    "\nIf you want to stick to the old one put in <no>");
-                string input = Console.ReadLine();
-                switch (input) {
-                    case "yes":
-                        ConfigurationManager.AppSettings.Set("previous_encryption", ConfigurationManager.AppSettings.Get("encryption"));
-                        break;
-                    case "no":
-                        type = ass.GetTypes().First(ts => ts.Name == prevEncryption.ToString());
-                        break;
-                    default:
-                        // fall back if false userinput
-                        break;
-                }
+                ConfigurationManager.AppSettings.Set("previous_encryption", ConfigurationManager.AppSettings.Get("encryption"));
+                //Console.WriteLine("The encryption type changed. Passwords may not be readable. If you want to change the type, put in <yes>. " +
+                //    "\nIf you want to stick to the old one put in <no>");
+                //string input = Console.ReadLine();
+                //switch (input) {
+                //    case "yes":
+                //        ConfigurationManager.AppSettings.Set("previous_encryption", ConfigurationManager.AppSettings.Get("encryption"));
+                //        break;
+                //    case "no":
+                //        type = ass.GetTypes().First(ts => ts.Name == prevEncryption.ToString());
+                //        break;
+                //    default:
+                //        // fall back if false userinput
+                //        break;
+                //}
 
             }
 
             // depending on config choose encryption. should not be changed.
             // to add a new encryption type, simply implement the interface using a new class and add below
-            encryptionMethod = (IEncryptionMethod)Activator.CreateInstance(type);
+            IEncryptionMethod encryptionMethod = (IEncryptionMethod)Activator.CreateInstance(type);
+            return encryptionMethod;
+        }
 
+
+        public void setMasterPw(byte[] pw) {
+            this.masterPw = pw;
         }
 
         public string Decrypt(byte[] crypted) {
@@ -58,9 +68,13 @@ namespace PasswordSafeLibrary {
             return encryptionMethod.encrypt(GetKey(masterPw), plain);
         }
 
+        public static byte[] Encrypt(string plain, byte[] masterPw) {
+            return decideEncryption().encrypt(GetKey(masterPw), plain);
+        }
+
         public static byte[] GetKey(byte[] keyBytes) {
-            using (var md5 = MD5.Create()) {
-                return md5.ComputeHash(keyBytes);
+            using (var checksum = MD5.Create()) {
+                return checksum.ComputeHash(keyBytes);
             }
         }
 

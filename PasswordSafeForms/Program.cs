@@ -7,7 +7,7 @@ using System.Windows.Forms;
 namespace PasswordSafeForms {
     internal class Program {
         /// <summary>
-        /// The main entry point for the application.
+        /// FormLogin manages the authentication. Created objects will be given to MainForm.
         /// </summary>
         [STAThread]
         public static void Main() {

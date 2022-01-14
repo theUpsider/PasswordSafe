@@ -10,15 +10,15 @@ namespace PasswordSafeLibrary {
             this.masterPasswordPath = masterPasswordPath;
         }
 
-        public bool MasterPasswordIsEqualTo(string masterPwToCompare) {
-            return File.Exists(this.masterPasswordPath) &&
-                masterPwToCompare == File.ReadAllText(this.masterPasswordPath);
-        }
         public bool MasterPasswordIsEqualTo(byte[] masterPwToCompare) {
             byte[] b = { };
             if (File.Exists(this.masterPasswordPath))
                 b=File.ReadAllBytes(this.masterPasswordPath);
             return masterPwToCompare.SequenceEqual(b);
+        }
+
+        public bool MasterPasswordIsEqualTo(byte[] masterPwToCompare, byte[] masterPwToCompare2) {
+            return masterPwToCompare.SequenceEqual(masterPwToCompare2);
         }
 
         internal void SetMasterPasswordPlain(string masterPw) {

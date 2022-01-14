@@ -10,6 +10,10 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace PasswordSafeForms {
+
+    /// <summary>
+    /// Manages the main interface and logic like adding, editing or deleting entries
+    /// </summary>
     public partial class MainForm : Form {
         private readonly PasswordSafeEngine passwordSafeEngine;
         List<StringValue> passwordNames;
@@ -32,7 +36,7 @@ namespace PasswordSafeForms {
         public MainForm(string filePath, PasswordSafeEngine pwSafeEngine) {
             InitializeComponent();
             passwordSafeEngine = pwSafeEngine;
-            passwordNames = passwordSafeEngine.GetStoredPasswords()
+            passwordNames = passwordSafeEngine.GetStoredPasswords().Where(name => name != "")
                                                                 .ToList()
                                                                 .ConvertAll(x => new StringValue(x));
             bindingList = new BindingList<StringValue>(passwordNames);
@@ -43,6 +47,29 @@ namespace PasswordSafeForms {
             passworddataGridView1.CellClick += PassworddataGridView1_CellClick;
             passworddataGridView1.CellDoubleClick += PassworddataGridView1_CellDoubleClick;
             passworddataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            passworddataGridView1.MouseClick += passworddataGridContextMenuShow_MouseClick;
+            passworddataGridView1.RowHeadersVisible = false;
+
+        }
+        
+        private void passworddataGridContextMenuShow_MouseClick(object sender, MouseEventArgs e) {
+            if (e.Button == MouseButtons.Right) {
+
+                
+                //m.MenuItems.Add(new MenuItem("Cut"));
+                //m.MenuItems.Add(new MenuItem("Copy"));
+                //m.MenuItems.Add(new MenuItem("Paste"));
+
+                int currentMouseOverRow = passworddataGridView1.HitTest(e.X, e.Y).RowIndex;
+
+                if (currentMouseOverRow >= 0) {
+                    passworddataGridView1.ClearSelection();
+                    passworddataGridView1.Rows[currentMouseOverRow].Selected = true;
+                    //m.MenuItems.Add(new MenuItem(string.Format("Do something to row {0}", currentMouseOverRow.ToString())));
+                    passwordGridcontextMenuStrip.Show(passworddataGridView1,new Point(e.X, e.Y));
+                }
+
+            }
         }
 
         private void PassworddataGridView1_CellClick(object sender, DataGridViewCellEventArgs e) {
@@ -52,9 +79,7 @@ namespace PasswordSafeForms {
         }
 
         private void PassworddataGridView1_CellDoubleClick(object sender, DataGridViewCellEventArgs e) {
-            Clipboard.SetText(
-                passwordSafeEngine.GetPassword(
-                (passworddataGridView1.Rows[e.RowIndex].DataBoundItem as StringValue).Name));
+            copyPasswordEntryToClipboard();
         }
 
         private void PassworddataGridView1_UserDeletingRow(object sender, DataGridViewRowCancelEventArgs e) {
@@ -106,12 +131,19 @@ namespace PasswordSafeForms {
         }
 
         private void toolStripButton2_Click(object sender, EventArgs e) {
-            MessageBox.Show("Double click on an item to retrieve password. Select item and either press del on your keyboard or use the icon. Made by David Fischer");
+            MessageBox.Show("Double click on an item to retrieve password. " +
+                "Select item and either press del on your keyboard or use the icon to delete. Exported passwords " +
+                "can be opened in any text editor. Made by David Fischer");
         }
 
         private void editPwToolStripButton_Click(object sender, EventArgs e) {
+            editPasswordEntry();
+        }
+
+        private void editPasswordEntry() {
+            string oldPasswordName = (passworddataGridView1.SelectedRows[0].DataBoundItem as StringValue).Name;
             if (passworddataGridView1.SelectedRows.Count > 0) {
-                PasswordInfo pwInfo = ShowAddPasswordDialogBox((passworddataGridView1.SelectedRows[0].DataBoundItem as StringValue).Name);
+                PasswordInfo pwInfo = ShowAddPasswordDialogBox(oldPasswordName);
                 if (pwInfo != null && pwInfo.Password != "" && pwInfo.PasswordName != "") {
                     StringValue item = new StringValue(
                         passwordSafeEngine.UpdatePassword(
@@ -119,9 +151,80 @@ namespace PasswordSafeForms {
                                     .PasswordName);
                     // replace item
                     bindingList[bindingList.IndexOf(passworddataGridView1.SelectedRows[0].DataBoundItem as StringValue)] = item;
+                    MessageBox.Show("Password sucessfully changed");
 
+                }else if (pwInfo != null && pwInfo.Password == "" && pwInfo.PasswordName != "" && oldPasswordName != pwInfo.PasswordName) {
+                    StringValue item = new StringValue(
+                        passwordSafeEngine.AddNewPassword(
+                            new PasswordInfo(
+                                passwordSafeEngine.GetPassword(oldPasswordName), 
+                                pwInfo.PasswordName))
+                                    .PasswordName);
+                    passwordSafeEngine.DeletePassword(oldPasswordName);
+                    // replace item
+                    bindingList[bindingList.IndexOf(passworddataGridView1.SelectedRows[0].DataBoundItem as StringValue)] = item;
+                    MessageBox.Show("Password sucessfully changed");
                 }
             }
+        }
+
+        private void EditMasterPwtoolStripButton_Click(object sender, EventArgs e) {
+            EditOrAddDatabaseForm testDialog = new EditOrAddDatabaseForm();
+            testDialog.databaseNameTextbox.Enabled = false;
+            testDialog.databaseNameTextbox.Text = "";
+            testDialog.Text = "Change master password";
+
+            if (testDialog.ShowDialog() == DialogResult.OK) {
+                // Read the contents of testDialog's TextBox.
+                var passwordValue = testDialog.masterPwRetypeTextbox.Text;
+                passwordSafeEngine.ChangeMasterPw(passwordValue);
+                MessageBox.Show("Password sucessfully changed");
+            }
+        }
+
+        private void ExportPasswordstoolStripButton_Click(object sender, EventArgs e) {
+            List<PasswordInfo> passwordInfos = new List<PasswordInfo>();
+
+            // get all passwords decrypted and store them
+            foreach (string storedPwString in passwordSafeEngine.GetStoredPasswords()) {
+                passwordInfos.Add(new PasswordInfo(passwordSafeEngine.GetPassword(storedPwString), storedPwString));
+            }
+
+            //exportEntriesDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            exportEntriesDialog.DefaultExt = "xml";
+            exportEntriesDialog.AddExtension = true;
+            exportEntriesDialog.FileName = "passwords.xml";
+            exportEntriesDialog.Filter = "XML (*.xml)|*.XML|All files (*.*)|*.*";
+            exportEntriesDialog.Title = "Export all entries as xml";
+            if (exportEntriesDialog.ShowDialog() == DialogResult.OK) {
+                ExportXml(ref passwordInfos,exportEntriesDialog.FileName);
+                MessageBox.Show("Passwords sucessfully exported");
+            }
+        }
+
+        public static void ExportXml<T>(ref T toExport, string location) {
+            System.Xml.Serialization.XmlSerializer writer =
+                new System.Xml.Serialization.XmlSerializer(typeof(T));
+
+            var path = location;
+            System.IO.FileStream file = System.IO.File.Create(path);
+
+            writer.Serialize(file, toExport);
+            file.Close();
+        }
+
+        private void CopyToolStripMenuItem_Click(object sender, EventArgs e) {
+            copyPasswordEntryToClipboard();
+        }
+
+        private void copyPasswordEntryToClipboard() {
+            Clipboard.SetText(
+                            passwordSafeEngine.GetPassword(
+                            (passworddataGridView1.SelectedRows[0].DataBoundItem as StringValue).Name));
+        }
+
+        private void editToolStripMenuItem_Click(object sender, EventArgs e) {
+            editPasswordEntry();
         }
     }
 }
