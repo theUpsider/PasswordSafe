@@ -1,7 +1,6 @@
 ﻿using System.Xml.Serialization;
 
 namespace PasswordSafeLibrary {
-    [XmlElement(ElementName = "Entry")]
     public class PasswordInfo {
         [XmlElement(ElementName = "Name")]
         public string PasswordName { get; set; }
